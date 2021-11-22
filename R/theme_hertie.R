@@ -1,12 +1,166 @@
-
-#' Toy example ggplot theme for the Hertie School
+#' A precise & pristine [ggplot2] theme with opinionated defaults and an emphasis on typography
 #'
-#' font_family: Georgia
-#' base_size: 23
-#' text colour: darkred
+#' The theme builds upon the theme_oii built by Marcel Schliebs
+#' Also has a "dark" / "modern" version for the new RStudio theme
+#'
+#' @md
+#' @section Why Arial Narrow?:
+#' First and foremost, Arial Narrow is generally installed by default or readily
+#' available on any modern system, so it's "free"-ish; plus, it is a condensed font
+#' with solid default kerning pairs and geometric numbers.
+#'
+#' @section Building upon `theme_ipsum`:
+#' The function is setup in such a way that you can customize your own one by just
+#' wrapping the call and changing the parameters. See source for examples.
+#'
+#' @section Gotchas:
+#' There are distinctions between font names and various devices. Names that work
+#' for display graphics devices and bitmap ones such as `png` may not work well
+#' for PostScript or PDF ones. You may need two versions of a font-based
+#' theme function for them to work in a particular situation. This situation
+#' usually only arises when using a newer font with many weights but somewhat
+#' irregular internal font name patterns.
+#'
+#' There is an option `hrbrthemes.loadfonts` which -- if set to `TRUE` -- will
+#' call `extrafont::loadfonts()` to register non-core fonts with R PDF & PostScript
+#' devices. If you are running under Windows, the package calls the same function
+#' to register non-core fonts with the Windows graphics device.
+#'
+#' @md
+#' @param base_family,base_size base font family and size
+#' @param plot_title_family,plot_title_face,plot_title_size,plot_title_margin plot title family, face, size and margi
+#' @param subtitle_family,subtitle_face,subtitle_size plot subtitle family, face and size
+#' @param subtitle_margin plot subtitle margin bottom (single numeric value)
+#' @param strip_text_family,strip_text_face,strip_text_size facet label font family, face and size
+#' @param caption_family,caption_face,caption_size,caption_margin plot caption family, face, size and margin
+#' @param axis_title_family,axis_title_face,axis_title_size axis title font family, face and size
+#' @param axis_title_just axis title font justification, one of `[blmcrt]`
+#' @param plot_margin plot margin (specify with `ggplot2::margin()`)
+#' @param grid_col,axis_col grid & axis colors; both default to `#cccccc`
+#' @param grid panel grid (`TRUE`, `FALSE`, or a combination of `X`, `x`, `Y`, `y`)
+#' @param axis_text_size font size of axis text
+#' @param axis add x or y axes? `TRUE`, `FALSE`, "`xy`"
+#' @param ticks ticks if `TRUE` add ticks
+#' @export
+#' @examples \dontrun{
+#' library(ggplot2)
+#' library(dplyr)
+#'
+#' # seminal scatterplot
+#' ggplot(mtcars, aes(mpg, wt)) +
+#'   geom_point() +
+#'   labs(x="Fuel effiiency (mpg)", y="Weight (tons)",
+#'        title="Seminal ggplot2 scatterplot example",
+#'        subtitle="A plot that is only useful for demonstration purposes",
+#'        caption="Brought to you by the letter 'g'") +
+#'   theme_hertie()
+#'
+#' # seminal bar chart
+#'
+#' update_geom_font_defaults()
+#'
+#' count(mpg, class) %>%
+#'   ggplot(aes(class, n)) +
+#'   geom_col() +
+#'   geom_text(aes(label=n), nudge_y=3) +
+#'   labs(x="Fuel efficiency (mpg)", y="Weight (tons)",
+#'        title="Seminal ggplot2 bar chart example",
+#'        subtitle="A plot that is only useful for demonstration purposes",
+#'        caption="Brought to you by the letter 'g'") +
+#'   theme_hertie(grid="Y") +
+#'   theme(axis.text.y=element_blank())
+#' }
 #' 
-#' looks pretty crappy. Please improve <3
+theme_hertie <- function(base_family="Roboto", base_size = 11.5,
+                        plot_title_family=base_family, plot_title_size = 18,
+                        plot_title_face="bold", plot_title_margin = 10,
+                        subtitle_family=base_family, subtitle_size = 12,
+                        subtitle_face = "plain", subtitle_margin = 15,
+                        strip_text_family = base_family, strip_text_size = 12,
+                        strip_text_face = "plain",
+                        caption_family = base_family, caption_size = 9,
+                        caption_face = "italic", caption_margin = 10,
+                        axis_text_size = base_size,
+                        axis_title_family = subtitle_family, axis_title_size = 9,
+                        axis_title_face = "plain", axis_title_just = "rt",
+                        plot_margin = margin(30, 30, 30, 30),
+                        grid_col = "#cccccc", grid = TRUE,
+                        axis_col = "#cccccc", axis = FALSE, ticks = FALSE) {
 
+ret <- ggplot2::theme_minimal(base_family=base_family, base_size=base_size)
 
-theme_hertie <- ggplot2::theme_classic() +
-  ggplot2::theme(text =  element_text(family = "Georgia", size = 23, color = "darkred"))
+##########
+
+  ret <- ret + theme(
+    #Text format:
+    #This sets the font, size, type and colour of text for the chart's title
+    plot.title = ggplot2::element_text(family=font,
+                                       size=24,
+                                       face="bold",
+                                       color="black"),
+    #This sets the font, size, type and colour of text for the chart's subtitle, as well as setting a margin between the title and the subtitle
+    plot.subtitle = ggplot2::element_text(family=font,
+                                          size=18,
+                                          face = "bold",
+                                          color= "firebrick4",
+                                          margin=ggplot2::margin(0,0,5,0)),
+    plot.caption = ggplot2::element_blank(),
+    #This leaves the caption text element empty, because it is set elsewhere in the finalise plot function
+
+    #Legend format
+    #This sets the position and alignment of the legend, removes a title and backround for it and sets the requirements for any text within the legend. The legend may often need some more manual tweaking when it comes to its exact position based on the plot coordinates.
+    legend.position = "top",
+    legend.text.align = 0,
+    legend.background = ggplot2::element_blank(),
+    legend.title = ggplot2::element_blank(),
+    legend.key = ggplot2::element_blank(),
+    legend.text = ggplot2::element_text(family=font,
+                                        size=18,
+                                        color="black"),
+
+    #Axis format
+    #This sets the text font, size and colour for the axis test, as well as setting the margins and removes lines and ticks. In some cases, axis lines and axis ticks are things we would want to have in the chart - the cookbook shows examples of how to do so.
+    axis.title = ggplot2::element_blank(),
+    axis.text = ggplot2::element_text(family=font,
+                                      size=18,
+                                      color="black"),
+    axis.text.x = ggplot2::element_text(margin=ggplot2::margin(5, b = 10)),
+    axis.ticks = ggplot2::element_blank(),
+    axis.line = ggplot2::element_blank(),
+
+    #Grid lines
+    #This removes all minor gridlines and adds major y gridlines. In many cases you will want to change this to remove y gridlines and add x gridlines. The cookbook shows you examples for doing so
+    panel.grid.minor = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_line(color="#cbcbcb"),
+    panel.grid.major.x = ggplot2::element_blank(),
+
+    #Blank background
+    #This sets the panel background as blank, removing the standard grey ggplot background colour from the plot
+    panel.background = ggplot2::element_blank(),
+
+    #Strip background (#This sets the panel background for facet-wrapped plots to white, removing the standard grey ggplot background colour and sets the title size of the facet-wrap title to font size 22)
+    strip.background = ggplot2::element_rect(fill="white"),
+    strip.text = ggplot2::element_text(size  = 22,  hjust = 0)
+  )
+
+}
+
+#' Update matching font defaults for text geoms
+#'
+#' Updates [ggplot2::geom_label] and [ggplot2::geom_text] font defaults
+#'
+#' @param family,face,size,color font family name, face, size and color
+#' @export
+update_geom_font_defaults <- function(family="Roboto", face="plain", size=3.5,
+                                      color = "black") {
+  update_geom_defaults("text", list(family=family, face=face, size=size, color=color))
+  update_geom_defaults("label", list(family=family, face=face, size=size, color=color))
+}
+
+#' @rdname ArialNarrow
+#' @md
+#' @title Arial Narrow font name R variable aliases
+#' @description `font_an` == "`Arial Narrow`"
+#' @format length 1 character vector
+#' @export
+font <- "Roboto"
